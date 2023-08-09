@@ -122,6 +122,12 @@ func (t *Terminal) DoWork() {
 			if err != nil {
 				log.Error("config: %v", err)
 			}
+		case "pushover":
+			cmd_ok = true
+			err := t.handlePushover(args[1:])
+			if err != nil {
+					log.Error("pushover: %v", err)
+			}
 		case "proxy":
 			cmd_ok = true
 			err := t.handleProxy(args[1:])
@@ -639,6 +645,37 @@ func (t *Terminal) handlePhishlets(args []string) error {
 	return fmt.Errorf("invalid syntax: %s", args)
 }
 
+func (t *Terminal) handlePushover(args []string) error {
+	if len(args) == 0 {
+		// Display current Pushover settings
+		keys := []string{"enabled", "appkey", "userkey"}
+		var enabledStr string = "no"
+		if t.cfg.IsPushoverEnabled() {
+			enabledStr = "yes"
+		}
+		vals := []string{enabledStr, t.cfg.GetPushoverAppKey(), t.cfg.GetPushoverUserKey()}
+		log.Printf("\n%s\n", AsRows(keys, vals))
+		return nil
+	} else if len(args) == 2 {
+		switch args[0] {
+		case "appkey":
+			t.cfg.SetPushoverAppKey(args[1])
+			return nil
+		case "userkey":
+			t.cfg.SetPushoverUserKey(args[1])
+			return nil
+		case "enable":
+			t.cfg.SetPushoverEnabled(true)
+			return nil
+		case "disable":
+			t.cfg.SetPushoverEnabled(false)
+			return nil
+		}
+	}
+	return fmt.Errorf("invalid syntax: %s", args)
+}
+
+
 func (t *Terminal) handleLures(args []string) error {
 	hiblue := color.New(color.FgHiBlue)
 	yellow := color.New(color.FgYellow)
@@ -1031,6 +1068,15 @@ func (t *Terminal) createHelp() {
 	h.AddSubCommand("config", []string{"ipv4", "external"}, "ipv4 external <ipv4_address>", "set ipv4 external address of the current server")
 	h.AddSubCommand("config", []string{"ipv4", "bind"}, "ipv4 bind <ipv4_address>", "set ipv4 bind address of the current server")
 	h.AddSubCommand("config", []string{"redirect_url"}, "redirect_url <url>", "change the url where all unauthorized requests will be redirected to (phishing urls will need to be regenerated)")
+
+	h.AddCommand("pushover", "general", "manage Pushover notifications", "Configures Pushover settings for push notifications.", LAYER_TOP,
+		readline.PcItem("pushover", readline.PcItem("enable"), readline.PcItem("disable"), readline.PcItem("appkey"), readline.PcItem("userkey")))
+	h.AddSubCommand("pushover", nil, "", "show current Pushover settings")
+	h.AddSubCommand("pushover", []string{"enable"}, "enable", "enable Pushover notifications")
+	h.AddSubCommand("pushover", []string{"disable"}, "disable", "disable Pushover notifications")
+	h.AddSubCommand("pushover", []string{"appkey"}, "appkey <app_key", "set the Pushover app key")
+	h.AddSubCommand("pushover", []string{"userkey"}, "userkey <user_key", "set the Pushover user key")
+
 
 	h.AddCommand("proxy", "general", "manage proxy configuration", "Configures proxy which will be used to proxy the connection to remote website", LAYER_TOP,
 		readline.PcItem("proxy", readline.PcItem("enable"), readline.PcItem("disable"), readline.PcItem("type"), readline.PcItem("address"), readline.PcItem("port"), readline.PcItem("username"), readline.PcItem("password")))

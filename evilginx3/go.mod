@@ -9,7 +9,11 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/go-acme/lego/v3 v3.1.0
 	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/websocket v1.5.0
+	github.com/gregdel/pushover v1.2.0
 	github.com/inconshreveable/go-vhost v0.0.0-20160627193104-06d84117953b
+	github.com/jinzhu/gorm v1.9.16
+	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/miekg/dns v1.1.50
 	github.com/mwitkow/go-http-dialer v0.0.0-20161116154839-378f744fb2b8
 	github.com/spf13/viper v1.10.1
@@ -20,16 +24,13 @@ require (
 require (
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/jinzhu/gorm v1.9.16 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.1.0 // indirect
 	github.com/libdns/libdns v0.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/mholt/acmez v1.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
